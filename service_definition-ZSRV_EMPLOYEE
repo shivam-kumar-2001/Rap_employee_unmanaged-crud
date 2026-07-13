@@ -1,0 +1,4 @@
+@EndUserText.label: 'EMPLOYEE SRVICE'
+define service ZSRV_EMPLOYEE {
+  expose Z_C_EMPLOYEES_U;
+}
