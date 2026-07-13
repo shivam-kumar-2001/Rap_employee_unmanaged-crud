@@ -1,0 +1,14 @@
+@AccessControl.authorizationCheck: #NOT_REQUIRED
+@EndUserText.label: 'projection on base cds'
+@Metadata.ignorePropagatedAnnotations: true
+@Metadata.allowExtensions: true
+define root view entity Z_C_EMPLOYEES_U
+  provider contract transactional_query 
+  as projection on Z_I_EMPLOYEES_U
+{
+    key Num,
+    FirstName,
+    LastName,
+    Age,
+    Status
+}
