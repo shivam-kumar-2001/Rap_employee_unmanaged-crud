@@ -1,0 +1,15 @@
+@EndUserText.label : 'Employee Table'
+@AbapCatalog.enhancement.category : #NOT_EXTENSIBLE
+@AbapCatalog.tableCategory : #TRANSPARENT
+@AbapCatalog.deliveryClass : #A
+@AbapCatalog.dataMaintenance : #RESTRICTED
+define table zst01_employee {
+
+  key client : abap.clnt not null;
+  key num    : sysuuid_x16 not null;
+  first_name : abap.char(20);
+  last_name  : abap.char(20);
+  age        : abap.dec(3,0);
+  status     : abap.char(1);
+
+}
