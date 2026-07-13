@@ -1,0 +1,11 @@
+@AccessControl.authorizationCheck: #NOT_REQUIRED
+@EndUserText.label: 'Employee Base CDS'
+@Metadata.ignorePropagatedAnnotations: true
+define root view entity Z_I_EMPLOYEES_U as select from zst01_employee
+{
+    key num as Num,
+    first_name as FirstName,
+    last_name as LastName,
+    age as Age,
+    status as Status
+}
