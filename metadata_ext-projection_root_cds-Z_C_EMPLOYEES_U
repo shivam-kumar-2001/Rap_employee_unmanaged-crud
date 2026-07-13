@@ -1,0 +1,49 @@
+@Metadata.layer: #CORE
+
+@UI: {
+headerInfo: { typeName: 'Employees', typeNamePlural: 'Employees', title: { type: #STANDARD, value: 'FirstName' } } }
+
+annotate entity Z_C_EMPLOYEES_U with
+{
+  @UI.facet: [ {
+  label: 'General Information',
+  id: 'GeneralInfo',
+  purpose: #STANDARD,
+  position: 10 ,
+  type: #IDENTIFICATION_REFERENCE
+  } ]
+  
+  @UI.identification: [ { position: 10  }]
+
+  @UI. lineItem: [ {  position: 10 }]
+  @UI.selectionField: [ {  position: 10 }]
+  @EndUserText.label: 'Employee Num'
+  Num;
+  @UI.identification: [ { position: 20  } ]
+  @UI. lineItem: [ { position: 20 }]
+  @UI.selectionField: [ { position: 20 }]
+  @EndUserText.label: 'Employee First Name'
+  FirstName;
+  @UI.identification: [ { position: 30 } ]
+  @UI. lineItem: [ { position: 30 }]
+  @UI.selectionField: [ { position: 30 }]
+  @EndUserText.label: 'Employee Last Name'
+  LastName;
+  @UI.identification: [ { position: 40 } ]
+  @UI. lineItem: [ { position: 40 }]
+  @EndUserText.label: 'Employee Age'
+  Age;
+  @UI.identification: 
+  [
+   { position: 50 },
+   { type: #FOR_ACTION,  dataAction: 'ExtendDoc' , label: 'Extend' , position: 10 } 
+  ]
+  @UI. lineItem: 
+  [ 
+   { position: 50 },
+   { type: #FOR_ACTION,  dataAction: 'clearStatus' , label: 'Clear Status' , position: 10 } ,
+   { type: #FOR_ACTION,  dataAction: 'u_status' , label: 'U Status' , position: 20 }
+  ]
+  @EndUserText.label: 'Status'
+  Status;
+}
