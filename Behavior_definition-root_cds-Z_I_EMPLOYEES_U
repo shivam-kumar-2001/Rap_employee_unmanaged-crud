@@ -1,0 +1,18 @@
+unmanaged implementation in class zbp_i_employees_u unique;
+strict ( 2 );
+
+define behavior for Z_I_EMPLOYEES_U //alias <alias_name>
+late numbering
+lock master
+authorization master ( instance )
+//etag master <field_name>
+{
+  create ( authorization : global );
+  update;
+  delete;
+  field ( readonly ) Num , Status;
+
+    action ExtendDoc result [1] $self;
+    action clearStatus result [1] $self;
+    action u_status result [1] $self;
+}
