@@ -1,0 +1,285 @@
+
+CLASS lcl_buffer DEFINITION FINAL.
+
+  PUBLIC SECTION.
+
+    CLASS-DATA:
+      gt_create TYPE STANDARD TABLE OF zst01_employee,
+      gt_update TYPE STANDARD TABLE OF zst01_employee,
+      gt_delete TYPE STANDARD TABLE OF zst01_employee.
+
+ENDCLASS.
+
+CLASS lcl_buffer IMPLEMENTATION.
+ENDCLASS.
+
+CLASS lhc_Z_I_EMPLOYEES_U DEFINITION INHERITING FROM cl_abap_behavior_handler.
+  PRIVATE SECTION.
+
+    METHODS get_instance_authorizations FOR INSTANCE AUTHORIZATION
+      IMPORTING keys REQUEST requested_authorizations FOR z_i_employees_u RESULT result.
+
+    METHODS get_global_authorizations FOR GLOBAL AUTHORIZATION
+      IMPORTING REQUEST requested_authorizations FOR z_i_employees_u RESULT result.
+
+    METHODS create FOR MODIFY
+      IMPORTING entities FOR CREATE z_i_employees_u.
+
+    METHODS update FOR MODIFY
+      IMPORTING entities FOR UPDATE z_i_employees_u.
+
+    METHODS delete FOR MODIFY
+      IMPORTING keys FOR DELETE z_i_employees_u.
+
+    METHODS read FOR READ
+      IMPORTING keys FOR READ z_i_employees_u RESULT result.
+
+    METHODS lock FOR LOCK
+      IMPORTING keys FOR LOCK z_i_employees_u.
+    METHODS Extenddoc FOR MODIFY
+      IMPORTING keys FOR ACTION z_i_employees_u~Extenddoc RESULT result.
+    METHODS clearStatus FOR MODIFY
+      IMPORTING keys FOR ACTION z_i_employees_u~clearStatus RESULT result.
+    METHODS u_status FOR MODIFY
+      IMPORTING keys FOR ACTION z_i_employees_u~u_status RESULT result.
+
+
+ENDCLASS.
+
+CLASS lhc_Z_I_EMPLOYEES_U IMPLEMENTATION.
+
+  METHOD get_instance_authorizations.
+  ENDMETHOD.
+
+  METHOD get_global_authorizations.
+  ENDMETHOD.
+
+  METHOD create.
+    " DATA : ls_employee type zst01_employee.
+
+    SELECT MAX( num )
+    FROM zst01_employee
+	INTO @DATA(lv_max_num).
+    	IF lv_max_num IS INITIAL.
+      		lv_max_num = 0.
+    ELSE.
+      lv_max_num = lv_max_num + 1.
+    ENDIF.
+
+    LOOP AT entities ASSIGNING FIELD-SYMBOL(<lfs_entities>).
+
+      APPEND VALUE zst01_employee(
+         client     = '100'
+         num        = lv_max_num
+         first_name = <lfs_entities>-FirstName
+         last_name  = <lfs_entities>-LastName
+         age        = <lfs_entities>-Age
+         status    = 'C'
+       ) TO lcl_buffer=>gt_create.
+
+      lv_max_num = lv_max_num + 1.
+    ENDLOOP.
+  ENDMETHOD.
+
+  METHOD update.
+
+    LOOP AT entities ASSIGNING FIELD-SYMBOL(<lfs_entities>).
+
+      SELECT SINGLE * FROM zst01_employee
+		WHERE num = @<lfs_entities>-Num
+		INTO @DATA(ls_employee).
+      		
+      		IF sy-subrc = 0 AND ls_employee IS NOT INITIAL .
+        		  IF <lfs_entities>-%control-FirstName = if_abap_behv=>mk-on.
+          		    ls_employee-first_name = <lfs_entities>-FirstName.
+        		  ENDIF.
+        		   IF <lfs_entities>-%control-LastName = if_abap_behv=>mk-on.
+          ls_employee-last_name = <lfs_entities>-LastName.
+        ENDIF.
+        IF <lfs_entities>-%control-Age = if_abap_behv=>mk-on.
+          ls_employee-age = <lfs_entities>-Age.
+        ENDIF.
+      		ENDIF.
+
+
+      APPEND VALUE zst01_employee(
+            client     = '100'
+            num        = ls_employee-num
+            first_name = ls_employee-first_name
+            last_name  = ls_employee-last_name
+            age        = ls_employee-age
+            status    = 'U'
+          ) TO lcl_buffer=>gt_update.
+
+
+      APPEND VALUE #(
+        %tky = <lfs_entities>-%tky
+        %msg = new_message_with_text(
+                 severity = if_abap_behv_message=>severity-success
+                 text     = |Employee { ls_employee-num } updated successfully|
+               )
+      ) TO reported-z_i_employees_u.
+
+
+
+    ENDLOOP.
+
+  ENDMETHOD.
+
+  METHOD delete.
+
+    LOOP AT keys ASSIGNING FIELD-SYMBOL(<lfs_key>).
+
+      APPEND VALUE zst01_employee(
+        num    = <lfs_key>-Num
+      ) TO lcl_buffer=>gt_delete.
+
+    ENDLOOP.
+  ENDMETHOD.
+
+  METHOD read.
+
+  ENDMETHOD.
+
+  METHOD lock.
+  ENDMETHOD.
+
+  METHOD extendDoc.
+  ENDMETHOD.
+
+  METHOD clearStatus.
+    DATA : lv_num TYPE string.
+
+    LOOP AT keys INTO DATA(ls_key).
+
+      SELECT SINGLE * FROM zst01_employee
+            WHERE num = @ls_key-Num
+            INTO @DATA(ls_employee).
+
+      IF sy-subrc = 0 AND ls_employee IS NOT INITIAL .
+
+        APPEND VALUE zst01_employee(
+           client     = '100'
+           num        = ls_employee-num
+           first_name = ls_employee-first_name
+           last_name  = ls_employee-last_name
+           age        = ls_employee-age
+           status    = ''
+         ) TO lcl_buffer=>gt_update.
+
+      ENDIF.
+
+      lv_num = ls_employee-num.
+      SHIFT lv_num LEFT DELETING LEADING '0'.
+
+      APPEND VALUE #(
+  "   %tky = ls_employee-%tky
+     %msg = new_message_with_text(
+              severity = if_abap_behv_message=>severity-success
+              text     = |Employee { lv_num } Status successfully|
+            )
+   ) TO reported-z_i_employees_u.
+    ENDLOOP.
+
+  ENDMETHOD.
+
+  METHOD u_status.
+    LOOP AT keys INTO DATA(ls_key).
+
+      SELECT SINGLE * FROM zst01_employee
+            WHERE num = @ls_key-Num
+            INTO @DATA(ls_employee).
+
+      IF sy-subrc = 0 AND ls_employee IS NOT INITIAL .
+
+        APPEND VALUE zst01_employee(
+           client     = '100'
+           num        = ls_employee-num
+           first_name = ls_employee-first_name
+           last_name  = ls_employee-last_name
+           age        = ls_employee-age
+           status    = 'U'
+         ) TO lcl_buffer=>gt_update.
+
+      ENDIF.
+    ENDLOOP.
+
+  ENDMETHOD.
+
+ENDCLASS.
+
+CLASS lsc_Z_I_EMPLOYEES_U DEFINITION INHERITING FROM cl_abap_behavior_saver.
+  PROTECTED SECTION.
+
+    METHODS finalize REDEFINITION.
+
+    METHODS check_before_save REDEFINITION.
+
+    METHODS adjust_numbers REDEFINITION.
+
+    METHODS save REDEFINITION.
+
+    METHODS cleanup REDEFINITION.
+
+    METHODS cleanup_finalize REDEFINITION.
+
+ENDCLASS.
+
+CLASS lsc_Z_I_EMPLOYEES_U IMPLEMENTATION.
+
+  METHOD finalize.
+  ENDMETHOD.
+
+  METHOD check_before_save.
+  ENDMETHOD.
+
+  METHOD adjust_numbers.
+  ENDMETHOD.
+
+  METHOD save.
+
+* Create
+
+    IF lcl_buffer=>gt_create IS NOT INITIAL.
+
+      INSERT zst01_employee
+        FROM TABLE @lcl_buffer=>gt_create.
+
+    ENDIF.
+
+
+* Update
+
+    LOOP AT lcl_buffer=>gt_update INTO DATA(ls_update).
+
+      UPDATE zst01_employee
+         SET first_name = @ls_update-first_name,
+             last_name  = @ls_update-last_name,
+             age        = @ls_update-age,
+             status    = @ls_update-status
+       WHERE  num        = @ls_update-num.
+
+    ENDLOOP.
+
+
+
+* Delete
+
+    LOOP AT lcl_buffer=>gt_delete INTO DATA(ls_delete).
+
+      DELETE FROM zst01_employee
+        WHERE num    = @ls_delete-num.
+
+    ENDLOOP.
+
+
+
+  ENDMETHOD.
+
+  METHOD cleanup.
+  ENDMETHOD.
+
+  METHOD cleanup_finalize.
+  ENDMETHOD.
+
+ENDCLASS.
