@@ -1,0 +1,15 @@
+projection;
+strict ( 2 );
+
+define behavior for Z_C_EMPLOYEES_U //alias <alias_name>
+{
+  use create;
+  use update;
+  use delete;
+
+  use action ExtendDoc;
+  use action clearStatus;
+  use action u_status;
+
+
+}
